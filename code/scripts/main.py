@@ -14,7 +14,7 @@ import wx.lib.inspection
 from read_data import read_data
 import pandas as pd
 import wx.richtext as rt
-
+import time
 
 class MainApp(wx.App):
     #Initialize the app    
@@ -326,7 +326,9 @@ class MainPanel(wx.Panel):
         controlSizer.Add(100,50,0)
         controlSizer.Add(spectrumsizer, 0, wx.ALIGN_CENTER, 0)          
         #Add Feedback Sizer
-        self.fbtext = wx.TextCtrl(self, id=wx.ID_ANY, size=(1000,200), style = wx.TE_READONLY|wx.TE_LEFT)
+        self.fbtext = wx.TextCtrl(self, id=wx.ID_ANY, size=(1000,200), style = wx.TE_READONLY|wx.TE_LEFT|wx.TE_MULTILINE)
+        style = self.fbtext.GetWindowStyle()
+        self.fbtext.AppendText("App Log\n")
         controlSizer.Add(self.fbtext, 0, wx.ALL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 0)
         #Add sizers to the main sizer (note the result sizer is blank and will be used when a button is clicked)
         self.mainSizer.Add(controlSizer, 1, wx.ALL, 0)
@@ -335,7 +337,6 @@ class MainPanel(wx.Panel):
         self.SetSizer(self.mainSizer)
         self.mainSizer.Fit(self)
         self.Layout()
-        print(controlSizer.GetSize())
 
     def onOpenFile(self, event):
 #            """
@@ -357,11 +358,12 @@ class MainPanel(wx.Panel):
             self.fname = name
         dlg.Destroy()
         return 
-
+ 
     def analyze(self, event):
         f = self.fname
         #Check to see if Analyze Button Has been clicked yet
         if f != "No File Currently Selected" and f != self.oldfile:
+            #self.fbtext.AppendText("Start: %s" % f)
             self.oldfile = f
             self.changechannelbutton.Hide()
             self.gototext.Hide()
@@ -383,6 +385,7 @@ class MainPanel(wx.Panel):
             self.goto.SetValue(1)
             self.showchannels()
         else:
+            self.fbtext.AppendText("Select Different File\n")
             return
 
 
@@ -548,7 +551,7 @@ class MainPanel(wx.Panel):
       
 
             else:
-                print("No Channel Selected")    
+                self.fbtext.AppendText("No Channel Selected\n")    
                 return
         
 
@@ -604,7 +607,6 @@ class MainPanel(wx.Panel):
                     break                    
                       
 
-            print(self.index)
             axes = self.plotter.add("Event {}".format(self.index + 1)).gca()
             colors = ["Black", "Blue", "Green"]
             i = 0
@@ -668,8 +670,11 @@ class MainPanel(wx.Panel):
      
     def plotwaveformspec(self, event):
         plt.figure()
-        counts, bins = np.histogram(self.data.stats["single_channel"][0]["amplitude"])
-        plt.hist(bins[:-1], bins, weights=counts)
+        amps = self.data.stats["single_channel"][0]["amplitude"]
+        amps.value_counts(normalize = True, sort = False, bins = 250).plot()
+#        counts, bins = np.histogram(self.data.stats["single_channel"][0]["amplitude"])
+#        plt.hist(bins[:-1], range = (0, .5))
+        #plt.hist(bins[:-1], bins, weights=counts)
         plt.xlabel('Amplitude')
         plt.ylabel('Number of Events')
         plt.title('Frequency vs. Amplitude')
