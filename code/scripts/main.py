@@ -16,6 +16,57 @@ import pandas as pd
 import wx.richtext as rt
 import time
 
+
+## Main script that runs the GUI program for HEPPDAP. Upon initial run, the app object is created
+## (MainApp) which inherits from wx.App class. Within the app, the main frame is created (MainFrame)
+## which inherits from wx.Frame class. The app is the entire program while the frame represents the
+## window in which things can be placed. MainFram has two children: apanel ("a" standing for analysis), which 
+## holds the PlotNoteBook object. This PlotNoteBook takes up the entire right hand side of the frame (window)
+## it has a method called "add" which allows additional plots to be added as additional pages to the PlotNoteBook.
+## The other child is the panel, this can be thought of as the actual control panel as it holds all the buttons and
+## inputs that allow the user to run the program and plot data. All controls are decendants of this class
+## User selects file using the browse button, once analyze is clicked, the read_data method is run. This takes
+## the raw data, unpacks it and returns an array that indexes the evetns as followed: 
+## event = read_data("file.dat")[event_number][channel_index] where event is a pandas array that contains the 
+## voltages and times. This allows for easy plotting as pandas and matplotlib work well with eachother
+## This program reads the output of read_data and interates through the first event of each channel.
+## If data is detected in the array, the associated channel index is added to a list of "active channels"
+## This is just a way for the program to know which channels have data and which ones do not. For example,
+## if channel 1 had data, channel 2 did not have data and channel 3 had data and all data came from myfile.dat,
+## read_data("myfile.dat")[0][0] and read_data("myfile.dat")[0][2] would have data while read_data("myfile.dat)[0][1]
+## would be an empty array. This is done so that the user can only select from channels that actually have data.
+## In other words, buttons/settings for all channels will always be created for each file run, however, if a channel does
+## not have data in it, the program will hide all controls that interact with that channel so that the user is not able 
+## is access controls that correspond to an empty channel
+## User can filter (or apply post-analysis triggers) such as specifcying a minimum amplitude of each channel and 
+## maxmimum timing difference between 2 channels. All filtration parameters use "AND" logic. Once the user specifies
+## filtration parameters, the program iterates through each event for each selected channel. If the first criterion
+## is satisfied, the next criterion is evaluated, this continues until one of two things happen:
+## 1) The event fails to meet the required criterion:
+##    Program will then go to the next event and restart the filtration process
+## 2) All criterion are passed:
+##    Program plots the event with the selected channels
+## If the user is viewing the most recently generated plot, upon clicking the "Next" button, 
+## the next event (that satisfies all (if any) filtration criterion) is plotted. The program knows if the user is 
+## on the last page (i.e. most recently plotted event) by getting the index of the page and comparing it to the total
+## number of pages in the PlotNoteBook. If the user is viewing an event that is not the last, the "Next" button will 
+## simply advance the tab (page) to the next plot that has already been generated. The "Previous" button always returns the plot to
+## the previous tab, no matter where the user is (unless, of course, the user is viewing the first tab (event) plotted).
+## If the user wants to analyze a new file, he/she must simply click "Browse", select the new file, and click "Analyze" 
+## THe "Analyze" button can be thought of as a 'reset button', upon being clicked it will clear the entire PlotNoteBook and 
+## reset all indexes being used by the program to 0. It basically starts the program from the beginning.
+
+
+#All characteristics (i.e. rise time, fall time, amplitude, etc) are obtained from using the methdod calc_stats() in read_data()
+## Returns associated array that is indexed by [channel_number][characteristic][event_number], the PlotNoteBook has a "on_tab_changed" event 
+## listener that is always running. It will update the displayed characteristics based on the currenlty viewed page in the PlotNoteBook
+## THis program makes extensive use of numpy, matplotlib and wxPython, before really digging deep into this code, it is
+## highly recommended that a working knowledge of matplotlib and wxPython (especially) is gained.
+
+
+
+
+
 class MainApp(wx.App):
     #Initialize the app    
     def __init__(self):
@@ -61,8 +112,10 @@ class PlotNotebook(wx.Panel):
      
     #Method to add a new tab (plot) to the notebook
     def add(self, name="plot"):
+        #Get the actual plot
         page = Plot(self.nb)
         page.name=name
+        # Add plot to the PloteNoteBook as an additional page
         self.nb.AddPage(page, name)
         return page.figure
 
@@ -392,7 +445,7 @@ class MainPanel(wx.Panel):
     def showchannels(self):
         #Iterate through the channels, and display the ones that read_data has available
         self.graphbutton.Show()
-        #multidimensional array that is index by board and then channel
+        #multidimensional array that is indexed by board and then channel
         availablechannels = self.data.loadedchannels
         numchannels = len(availablechannels[0]) + len(availablechannels[1]) 
         if numchannels > 1:
