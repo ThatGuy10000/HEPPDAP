@@ -97,7 +97,6 @@ def calc_stats_single_channel(
                 stat_dict[channel][stat].append(
                     stat_calculator.__getattribute__(stat)()
                 )
-
     for channel, channel_event in event.items():
         for stat in stats:
             stat_dict[channel][stat] = pd.Series(stat_dict[channel][stat])
