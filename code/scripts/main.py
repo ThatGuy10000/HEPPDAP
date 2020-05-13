@@ -93,11 +93,22 @@ class MainFrame(wx.Frame):
         self.apanel = PlotNotebook(self, id=-1, pos=(100,100), size=(300,300))
         self.panel = MainPanel(self, id=wx.ID_ANY, pos=(0,100), size=(100,100))
         sizer.Add(self.panel, 1, wx.EXPAND|wx.ALL, 5)
-        oid = wx.NewId()
-        openitem = fileMenu.Append(wx.ID_ANY, "Open\tCtrl+X", "Open") 
-        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, openitem)
-        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, id=oid)
 
+        #Build Menu
+        oid = wx.NewId()
+        aid = wx.NewId()
+        #Open Option Under File
+        openitem = fileMenu.Append(wx.ID_ANY, "Open\tCtrl+O", "Open") 
+        #Bind Item
+        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, openitem)
+        #Bind Keyboard Shortcut
+        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, id=oid)
+        #Analyze Item
+        analyzeitem = fileMenu.Append(wx.ID_ANY, "Analyze\tReturn", "Analyze")
+        #Bind Item
+        self.Bind(wx.EVT_MENU, self.panel.analyze, analyzeitem)
+        #Bind Keyboard Shortcut
+        self.Bind(wx.EVT_MENU, self.panel.analyze, id=aid)
 
         menubar.Append(fileMenu, '&File')
         self.SetMenuBar(menubar)
@@ -143,7 +154,7 @@ class PlotNotebook(wx.Panel):
                 if channel.IsChecked():
                     bindex = board.index(channel)        
 
-        print("Channel: %s" % bindex)
+        #print("Channel: %s" % bindex)
         #Get index from the name of the current tab
         index = int(self.nb.GetCurrentPage().name.split()[1]) - 1
         mainpanel.index = index 
@@ -220,8 +231,8 @@ class MainPanel(wx.Panel):
         ctext = wx.StaticText(self, wx.ID_ANY, "Controller Side")
         controlSizer.Add(ctext, 0, wx.CENTER|wx.TOP, 0)
         #Add Analyze Button
-        analyze_button = wx.Button(self, wx.ID_ANY, 'Analyze')
-        controlSizer.Add(analyze_button, 0, wx.ALL, 5)
+        ##analyze_button = wx.Button(self, wx.ID_ANY, 'Analyze')
+        ##controlSizer.Add(analyze_button, 0, wx.ALL, 5)
         #Add Button Sizer to contain 'Previous' and 'Next' Buttons (Hidden on start up)
         buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.next_button = wx.Button(self, wx.ID_ANY, 'Next')
@@ -230,7 +241,7 @@ class MainPanel(wx.Panel):
         self.prev_button.Hide()
         self.Bind(wx.EVT_BUTTON, self.next, self.next_button)
         self.Bind(wx.EVT_BUTTON, self.previous, self.prev_button)
-        self.Bind(wx.EVT_BUTTON, self.analyze, analyze_button)
+        ##self.Bind(wx.EVT_BUTTON, self.analyze, analyze_button)
         buttonSizer.Add(self.prev_button, 0, wx.ALL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 5)
         buttonSizer.Add(self.next_button, 0, wx.ALL|wx.RESERVE_SPACE_EVEN_IF_HIDDEN, 5)
         controlSizer.Add(buttonSizer, 0, wx.ALL|wx.EXPAND, 0)
@@ -566,7 +577,7 @@ class MainPanel(wx.Panel):
                         channel2 = self.channel2.GetString(self.channel2.GetSelection())
                         eventfound = False
                         while True:
-                            print("Event not found")
+                            #print("Event not found")
                             ptime1 = float(self.data.stats['single_channel'][int(channel1[-1]) - 1]["peak_time"][self.index])  
                             ptime2 = float(self.data.stats['single_channel'][int(channel2[-1]) - 1]["peak_time"][self.index])  
                             diff = abs(ptime1 - ptime2)
@@ -583,7 +594,7 @@ class MainPanel(wx.Panel):
                                 triggamp = channel.GetChildren()[1].GetWindow().GetValue()
                                 channelnum = int(channel.GetChildren()[0].GetWindow().GetLabel()[8])-1
                                 amp = float(self.data.stats['single_channel'][channelnum]["amplitude"][self.index]) 
-                                print(amp)
+                                #print(amp)
                                 if triggamp > amp * 1000: #Bad
                                     fault = True
                                     break
@@ -644,7 +655,7 @@ class MainPanel(wx.Panel):
                     channel2 = self.channel2.GetString(self.channel2.GetSelection())
                     eventfound = False
                     while True:
-                        print("Event not found")
+                        #print("Event not found")
                         ptime1 = float(self.data.stats['single_channel'][int(channel1[-1]) - 1]["peak_time"][self.index])  
                         ptime2 = float(self.data.stats['single_channel'][int(channel2[-1]) - 1]["peak_time"][self.index])  
                         diff = abs(ptime1 - ptime2)
@@ -661,7 +672,7 @@ class MainPanel(wx.Panel):
                             triggamp = channel.GetChildren()[1].GetWindow().GetValue()
                             channelnum = int(channel.GetChildren()[0].GetWindow().GetLabel()[8])-1
                             amp = float(self.data.stats['single_channel'][channelnum]["amplitude"][self.index]) 
-                            print(amp)
+                            #print(amp)
                             if triggamp > amp * 1000: #Bad
                                 fault = True
                                 break
