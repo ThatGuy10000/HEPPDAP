@@ -86,13 +86,28 @@ class MainFrame(wx.Frame):
         self.InitFrame()
 
     def InitFrame(self):
+        menubar = wx.MenuBar()
+        fileMenu = wx.Menu() 
         # Make sizer and add panels to sizer to for auto-resizing
         sizer=wx.BoxSizer(wx.HORIZONTAL)
         self.apanel = PlotNotebook(self, id=-1, pos=(100,100), size=(300,300))
         self.panel = MainPanel(self, id=wx.ID_ANY, pos=(0,100), size=(100,100))
         sizer.Add(self.panel, 1, wx.EXPAND|wx.ALL, 5)
+        oid = wx.NewId()
+        openitem = fileMenu.Append(wx.ID_ANY, "Open\tCtrl+X", "Open") 
+        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, openitem)
+        self.Bind(wx.EVT_MENU, self.panel.onOpenFile, id=oid)
+
+
+        menubar.Append(fileMenu, '&File')
+        self.SetMenuBar(menubar)
         sizer.Add(self.apanel, 3, wx.ALIGN_TOP|wx.EXPAND, 0)
+        self.accel_tbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('O'), oid)])
+        self.SetAcceleratorTable(self.accel_tbl)
         self.SetSizer(sizer)
+
+
+
 
 
 
@@ -222,11 +237,11 @@ class MainPanel(wx.Panel):
         #Add FileSizer for file input
         fileSizer = wx.BoxSizer(wx.VERTICAL)
         self.filename = wx.StaticText(self, id=wx.ID_ANY, label="No File Currently Selected")
-        browser = wx.Button(self, wx.ID_ANY, 'Browse')
-        browser.Bind(wx.EVT_BUTTON, self.onOpenFile)
+#        browser = wx.Button(self, wx.ID_ANY, 'Browse')
+#        browser.Bind(wx.EVT_BUTTON, self.onOpenFile)
         self.fname = "No File Currently Selected"
         fileSizer.Add(self.filename, 0, wx.ALL, 0)
-        fileSizer.Add(browser, 0, wx.ALL|wx.CENTER, 0)
+#        fileSizer.Add(browser, 0, wx.ALL|wx.CENTER, 0)
         controlSizer.Add(fileSizer, 0, wx.ALL|wx.EXPAND, 0)
         #Create Sizer for Channel Selectors
         self.board1text = wx.StaticText(self, wx.ID_ANY, "Board 1")
@@ -417,6 +432,8 @@ class MainPanel(wx.Panel):
         #Check to see if Analyze Button Has been clicked yet
         if f != "No File Currently Selected" and f != self.oldfile:
             #self.fbtext.AppendText("Start: %s" % f)
+            self.next_button.Hide()
+            self.prev_button.Hide()
             self.oldfile = f
             self.changechannelbutton.Hide()
             self.gototext.Hide()
@@ -724,10 +741,7 @@ class MainPanel(wx.Panel):
     def plotwaveformspec(self, event):
         plt.figure()
         amps = self.data.stats["single_channel"][0]["amplitude"]
-        amps.value_counts(normalize = True, sort = False, bins = 250).plot()
-#        counts, bins = np.histogram(self.data.stats["single_channel"][0]["amplitude"])
-#        plt.hist(bins[:-1], range = (0, .5))
-        #plt.hist(bins[:-1], bins, weights=counts)
+        amps.value_counts(normalize = False, sort = False, bins = 250).plot()
         plt.xlabel('Amplitude')
         plt.ylabel('Number of Events')
         plt.title('Frequency vs. Amplitude')
