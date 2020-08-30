@@ -12,6 +12,7 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as Navigat
 import wx.lib.agw.multidirdialog as MDD
 import wx.lib.inspection
 from heppdap.read_data import read_data
+from channelnames import Channelnameframe
 import pandas as pd
 import wx.richtext as rt
 import time
@@ -115,7 +116,8 @@ class MainFrame(wx.Frame):
         ##EDIT##
         #Change Channel Names
         channelname = editMenu.Append(wx.ID_ANY, "Set Channel Names", "Configure Channels")
-        channelname.Enable(False)
+        self.Bind(wx.EVT_MENU, self.panel.configchannelname, channelname)
+        #channelname.Enable(False)
         menubar.Append(fileMenu, '&File')
         menubar.Append(editMenu, '&Edit')
         self.SetMenuBar(menubar)
@@ -424,6 +426,9 @@ class MainPanel(wx.Panel):
         self.mainSizer.Fit(self)
         self.Layout()
 
+        #"switch" for seeing if channel names have been set
+        self.channelnamesset = False
+
     def onOpenFile(self, event):
 #            """
 #           Create and show the Open FileDialog
@@ -449,6 +454,7 @@ class MainPanel(wx.Panel):
         f = self.fname
         #Check to see if Analyze Button Has been clicked yet
         if f != "No File Currently Selected" and f != self.oldfile:
+            self.channelnamesset = False
             #self.fbtext.AppendText("Start: %s" % f)
             self.next_button.Hide()
             self.prev_button.Hide()
@@ -545,30 +551,35 @@ class MainPanel(wx.Panel):
                 
                    
     def graphdata(self, event):
-            numchannels = 0
-            for board in self.channelmatrix:
-                for channel in board:
-                    if channel.IsChecked():
-                        numchannels += 1
-                    else:
-                        continue
-
-            if numchannels > 0:
-                if numchannels == 1:
-                    self.stats.ShowItems(True)
+        if self.channelnamesset == False:
+            channelnames = getchannelnames(self.channelmatrix)
+            print(channelnames)
+        else:
+            channelnames= [["Channel 1", "Channel 2", "Channel 3", "Channel 4"], ["Channel 1", "Channel 2", "Channel 3", "Channel 4"]]
+        numchannels = 0
+        for board in self.channelmatrix:
+            for channel in board:
+                if channel.IsChecked():
+                    numchannels += 1
                 else:
-                    self.stats.ShowItems(False)
+                    continue
+
+        if numchannels > 0:
+            if numchannels == 1:
+                self.stats.ShowItems(True)
+            else:
+                self.stats.ShowItems(False)
    
             #Clean the current graph and plot the data if at least one checkbox is checked
-                self.timeSizer.ShowItems(False)
-                self.ampsizer.ShowItems(False)
-                while(self.plotter.nb.GetPageCount()):
-                    self.plotter.nb.DeletePage(0)
+            self.timeSizer.ShowItems(False)
+            self.ampsizer.ShowItems(False)
+            while(self.plotter.nb.GetPageCount()):
+                self.plotter.nb.DeletePage(0)
         
-                self.plotchannels(0)
-            else:
-                self.fbtext.AppendText("No Channel Selected\n")    
-                return
+            self.plotchannels(0)
+        else:
+            self.fbtext.AppendText("No Channel Selected\n")    
+            return
 
     def plotchannels(self, index):
         colors = ["Black", "Blue", "Green"]
@@ -680,7 +691,13 @@ class MainPanel(wx.Panel):
         self.plotter.nb.AdvanceSelection()
         self.Layout()
         self.plotter.Layout()
-     
+    
+    def configchannelname(self, event):
+        frame = Channelnameframe("Channel Designations")
+        frame.SetSize(1000,800)
+        frame.Show()
+
+ 
     def plotwaveformspec(self, event):
         plt.figure()
         amps = self.data.stats["single_channel"][0]["amplitude"]
