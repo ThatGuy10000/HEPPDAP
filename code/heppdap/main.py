@@ -113,11 +113,12 @@ class MainFrame(wx.Frame):
         #Bind Keyboard Shortcut
         self.Bind(wx.EVT_MENU, self.panel.analyze, id=aid)
 
+
         ##EDIT##
         #Change Channel Names
-        channelname = editMenu.Append(wx.ID_ANY, "Set Channel Names", "Configure Channels")
-        self.Bind(wx.EVT_MENU, self.panel.configchannelname, channelname)
-        #channelname.Enable(False)
+        self.channelname = editMenu.Append(wx.ID_ANY, "Set Channel Names", "Configure Channels")
+        self.Bind(wx.EVT_MENU, self.panel.configchannelname, self.channelname)
+        self.channelname.Enable(False)
         menubar.Append(fileMenu, '&File')
         menubar.Append(editMenu, '&Edit')
         self.SetMenuBar(menubar)
@@ -429,6 +430,11 @@ class MainPanel(wx.Panel):
         #"switch" for seeing if channel names have been set
         self.channelnamesset = False
 
+    def configchannelname(self, event):
+        self.channelnameframe = Channelnameframe("Channel Designations", self.data.loadedchannels)
+        self.channelnameframe.SetSize(1000,800)
+        self.channelnameframe.Show()
+
     def onOpenFile(self, event):
 #            """
 #           Create and show the Open FileDialog
@@ -454,7 +460,7 @@ class MainPanel(wx.Panel):
         f = self.fname
         #Check to see if Analyze Button Has been clicked yet
         if f != "No File Currently Selected" and f != self.oldfile:
-            self.channelnamesset = False
+            self.parent.channelname.Enable()
             #self.fbtext.AppendText("Start: %s" % f)
             self.next_button.Hide()
             self.prev_button.Hide()
@@ -551,11 +557,6 @@ class MainPanel(wx.Panel):
                 
                    
     def graphdata(self, event):
-        if self.channelnamesset == False:
-            channelnames = getchannelnames(self.channelmatrix)
-            print(channelnames)
-        else:
-            channelnames= [["Channel 1", "Channel 2", "Channel 3", "Channel 4"], ["Channel 1", "Channel 2", "Channel 3", "Channel 4"]]
         numchannels = 0
         for board in self.channelmatrix:
             for channel in board:
@@ -582,12 +583,20 @@ class MainPanel(wx.Panel):
             return
 
     def plotchannels(self, index):
+        try:
+            channelnames = self.channelnameframe.getchannelnames()
+        except AttributeError:
+            channelnames = [["Channel 1", "Channel 2", "Channel 3", "Channel 4"], ["Channel 1", "Channel 2", "Channel 3", "Channel 4"]]
+
         colors = ["Black", "Blue", "Green"]
         self.index = self.findnextevent(index)
         axes = self.plotter.add("Event {}".format(self.index + 1)).gca()
         i = 0
+        b = 0
+        c = -1
         for board in self.channelmatrix:
             for channel in board:
+                c += 1
                 channel.Disable()
                 if channel.IsChecked():
                     axes.grid(True)
@@ -595,12 +604,14 @@ class MainPanel(wx.Panel):
                     axes.set_ylabel("Voltage (V)")
                     axes.set_xlabel("Time (ns)")
                     plt = self.data.events[self.index][board.index(channel)]
-                    axes.plot(plt, label="Channel " + str(board.index(channel) + 1), color = colors[i])
+                    axes.plot(plt, label= channelnames[b][c], color = colors[i])
                     i += 1
                     axes.legend()
                        
                 else:
                     continue
+            
+            b += 1    
 
     def findnextevent(self, index):                 
         self.next_button.Show()
@@ -692,11 +703,6 @@ class MainPanel(wx.Panel):
         self.Layout()
         self.plotter.Layout()
     
-    def configchannelname(self, event):
-        frame = Channelnameframe("Channel Designations")
-        frame.SetSize(1000,800)
-        frame.Show()
-
  
     def plotwaveformspec(self, event):
         plt.figure()
