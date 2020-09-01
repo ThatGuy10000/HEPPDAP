@@ -431,7 +431,7 @@ class MainPanel(wx.Panel):
         self.channelnamesset = False
 
     def configchannelname(self, event):
-        self.channelnameframe = Channelnameframe("Channel Designations", self.data.loadedchannels)
+        self.channelnameframe = Channelnameframe("Channel Designations", self.data.loadedchannels, self.fname)
         self.channelnameframe.SetSize(1000,800)
         self.channelnameframe.Show()
 
