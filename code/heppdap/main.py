@@ -553,7 +553,7 @@ class MainPanel(wx.Panel):
             for channel in board:
                 self.channelmatrix[availablechannels.index(board)][channel - 1].Enable()
                 self.ampmatrix[availablechannels.index(board)][channel - 1].ShowItems(True)
-        
+       
                 
                    
     def graphdata(self, event):
