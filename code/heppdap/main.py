@@ -27,9 +27,9 @@ import time
 ## The other child is the panel, this can be thought of as the actual control panel as it holds all the buttons and
 ## inputs that allow the user to run the program and plot data. All controls are decendants of this class
 ## User selects file using the browse button, once analyze is clicked, the read_data method is run. This takes
-## the raw data, unpacks it and returns an array that indexes the evetns as followed: 
+## the raw data, unpacks it and returns an array that indexes the events as followed: 
 ## event = read_data("file.dat")[event_number][channel_index] where event is a pandas array that contains the 
-## voltages and times. This allows for easy plotting as pandas and matplotlib work well with eachother
+## voltages and times. This allows for easy plotting as pandas and matplotlib work well with each other
 ## This program reads the output of read_data and interates through the first event of each channel.
 ## If data is detected in the array, the associated channel index is added to a list of "active channels"
 ## This is just a way for the program to know which channels have data and which ones do not. For example,
@@ -39,7 +39,7 @@ import time
 ## In other words, buttons/settings for all channels will always be created for each file run, however, if a channel does
 ## not have data in it, the program will hide all controls that interact with that channel so that the user is not able 
 ## is access controls that correspond to an empty channel
-## User can filter (or apply post-analysis triggers) such as specifcying a minimum amplitude of each channel and 
+## User can filter (or apply post-analysis triggers) such as specifying a minimum amplitude of each channel and 
 ## maxmimum timing difference between 2 channels. All filtration parameters use "AND" logic. Once the user specifies
 ## filtration parameters, the program iterates through each event for each selected channel. If the first criterion
 ## is satisfied, the next criterion is evaluated, this continues until one of two things happen:
@@ -54,14 +54,14 @@ import time
 ## simply advance the tab (page) to the next plot that has already been generated. The "Previous" button always returns the plot to
 ## the previous tab, no matter where the user is (unless, of course, the user is viewing the first tab (event) plotted).
 ## If the user wants to analyze a new file, he/she must simply click "Browse", select the new file, and click "Analyze" 
-## THe "Analyze" button can be thought of as a 'reset button', upon being clicked it will clear the entire PlotNoteBook and 
+## The "Analyze" button can be thought of as a 'reset button', upon being clicked it will clear the entire PlotNoteBook and 
 ## reset all indexes being used by the program to 0. It basically starts the program from the beginning.
 
 
 #All characteristics (i.e. rise time, fall time, amplitude, etc) are obtained from using the methdod calc_stats() in read_data()
 ## Returns associated array that is indexed by [channel_number][characteristic][event_number], the PlotNoteBook has a "on_tab_changed" event 
 ## listener that is always running. It will update the displayed characteristics based on the currenlty viewed page in the PlotNoteBook
-## THis program makes extensive use of numpy, matplotlib and wxPython, before really digging deep into this code, it is
+## This program makes extensive use of numpy, matplotlib and wxPython, before really digging deep into this code, it is
 ## highly recommended that a working knowledge of matplotlib and wxPython (especially) is gained.
 
 
@@ -151,7 +151,7 @@ class PlotNotebook(wx.Panel):
         #Get the actual plot
         page = Plot(self.nb)
         page.name=name
-        # Add plot to the PloteNoteBook as an additional page
+        # Add plot to the PlotNotebook as an additional page
         self.nb.AddPage(page, name)
         return page.figure
 
